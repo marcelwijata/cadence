@@ -65,6 +65,9 @@ body{font-family:'Lora',Georgia,serif;background:var(--bg);color:var(--text);fon
 .search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text-secondary);}
 .filter-clear-all{font-size:11px;color:var(--text-secondary);cursor:pointer;background:none;border:none;font-family:inherit;padding:4px 6px;white-space:nowrap;}
 .filter-clear-all:hover{color:var(--error);text-decoration:underline;}
+.filter-count{font-size:11px;color:var(--text-secondary);white-space:nowrap;}
+.dd-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dd-item-count{color:var(--text-secondary);font-size:11px;flex-shrink:0;}
 
 /* Stat cards */
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px;}
@@ -409,44 +412,19 @@ body{font-family:'Lora',Georgia,serif;background:var(--bg);color:var(--text);fon
   <div id="tab-tasks">
     <div class="filter-bar">
       <div class="filter-bar-left">
-        <div class="dropdown-wrap" id="wrap-branch">
-          <button class="dd-btn" id="btn-branch" onclick="toggleDropdown('branch')">
-            <span id="btn-branch-label">Branch</span>
+        <div class="dropdown-wrap" id="wrap-project" style="display:none;">
+          <button class="dd-btn" id="btn-project" onclick="toggleDropdown('project')">
+            <span id="btn-project-label">Projects</span>
             <svg viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
-          <div class="dd-menu" id="menu-branch">
-            <button class="dd-clear" onclick="clearFilter('branch')">Clear branch filter</button>
-            <div class="dd-divider"></div>
-            <label class="dd-item"><input type="checkbox" value="rewards" onchange="toggleBranch(this)"><span class="dot" style="background:#785A00"></span>Rewards</label>
-            <label class="dd-item"><input type="checkbox" value="product" onchange="toggleBranch(this)"><span class="dot" style="background:#C2410C"></span>Product</label>
-            <label class="dd-item"><input type="checkbox" value="business" onchange="toggleBranch(this)"><span class="dot" style="background:#15803D"></span>Business</label>
-          </div>
-        </div>
-        <div class="dropdown-wrap" id="wrap-tag">
-          <button class="dd-btn" id="btn-tag" onclick="toggleDropdown('tag')">
-            <span id="btn-tag-label">Tag</span>
-            <svg viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <div class="dd-menu" id="menu-tag">
-            <button class="dd-clear" onclick="clearFilter('tag')">Clear tag filter</button>
-            <div class="dd-divider"></div>
-            <label class="dd-item"><input type="checkbox" value="Bali" onchange="toggleTag(this)"><span class="dot" style="background:#7C5E00"></span>Bali</label>
-            <label class="dd-item"><input type="checkbox" value="Komodo" onchange="toggleTag(this)"><span class="dot" style="background:#1B5E20"></span>Komodo</label>
-            <label class="dd-item"><input type="checkbox" value="Jakarta" onchange="toggleTag(this)"><span class="dot" style="background:#0D47A1"></span>Jakarta</label>
-            <label class="dd-item"><input type="checkbox" value="Delonix" onchange="toggleTag(this)"><span class="dot" style="background:#4A148C"></span>Delonix</label>
-            <label class="dd-item"><input type="checkbox" value="Riverside" onchange="toggleTag(this)"><span class="dot" style="background:#004D40"></span>Riverside</label>
-            <label class="dd-item"><input type="checkbox" value="AYANA Cruise" onchange="toggleTag(this)"><span class="dot" style="background:#1A237E"></span>AYANA Cruise</label>
-            <label class="dd-item"><input type="checkbox" value="Zero Based Manning" onchange="toggleTag(this)"><span class="dot" style="background:#3E2723"></span>Zero Based Manning</label>
-            <label class="dd-item"><input type="checkbox" value="SPV" onchange="toggleTag(this)"><span class="dot" style="background:#BF360C"></span>SPV</label>
-            <label class="dd-item"><input type="checkbox" value="KYC Replacement" onchange="toggleTag(this)"><span class="dot" style="background:#880E4F"></span>KYC Replacement</label>
-            <label class="dd-item"><input type="checkbox" value="KrisFlyer" onchange="toggleTag(this)"><span class="dot" style="background:#1B5E20"></span>KrisFlyer</label>
-          </div>
+          <div class="dd-menu" id="menu-project"></div>
         </div>
         <div class="search-wrap">
           <span class="search-icon"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="m11 11 3 3" stroke-linecap="round"/></svg></span>
           <input type="text" id="search-input" placeholder="Search tasks…" oninput="renderAll()">
         </div>
       </div>
+      <span class="filter-count" id="filter-count"></span>
       <button class="filter-clear-all" id="clear-all-btn" onclick="clearAllFilters()" style="display:none;">✕ Clear all</button>
     </div>
 
@@ -460,8 +438,8 @@ body{font-family:'Lora',Georgia,serif;background:var(--bg);color:var(--text);fon
   <div id="tab-stats" style="display:none;">
     <div class="period-bar">
       <span class="period-label">Period:</span>
-      <button class="period-btn active" data-days="7"   onclick="setPeriod(this)">7 days</button>
-      <button class="period-btn" data-days="30"  onclick="setPeriod(this)">30 days</button>
+      <button class="period-btn" data-days="7"   onclick="setPeriod(this)">7 days</button>
+      <button class="period-btn active" data-days="30"  onclick="setPeriod(this)">30 days</button>
       <button class="period-btn" data-days="90"  onclick="setPeriod(this)">3 months</button>
       <button class="period-btn" data-days="180" onclick="setPeriod(this)">6 months</button>
       <button class="period-btn" data-days="ytd" onclick="setPeriod(this)">Year to date</button>
@@ -478,14 +456,9 @@ body{font-family:'Lora',Georgia,serif;background:var(--bg);color:var(--text);fon
           <div class="chart-wrap" style="height:200px;"><canvas id="chart-velocity"></canvas></div>
         </div>
         <div class="chart-card">
-          <div class="chart-title">By branch</div>
+          <div class="chart-title">By project</div>
           <div class="chart-wrap" style="height:200px;"><canvas id="chart-branch"></canvas></div>
-          <div class="legend-row" id="branch-legend"></div>
         </div>
-      </div>
-      <div class="chart-card-full" id="tags-chart-card">
-        <div class="chart-title">By property / project tag</div>
-        <div class="chart-wrap"><canvas id="chart-tags"></canvas></div>
       </div>
       <div class="chart-card-full">
         <div class="chart-title">Performance insights</div>
@@ -493,10 +466,7 @@ body{font-family:'Lora',Georgia,serif;background:var(--bg);color:var(--text);fon
       </div>
     </div>
 
-    <div class="stats-empty" id="stats-prompt">
-      <p style="margin-bottom:16px;">Load your completion history to see performance analytics.</p>
-      <button class="stats-load-btn" onclick="loadStats()">Load statistics</button>
-    </div>
+    <div class="stats-empty" id="stats-prompt" style="display:none;"></div>
   </div>
 
 </div>
@@ -515,35 +485,20 @@ body{font-family:'Lora',Georgia,serif;background:var(--bg);color:var(--text);fon
 const IS_GAS = typeof google !== 'undefined' && google.script;
 const WORKSPACE_GID = '7388513620959';
 
-const TAGS = {
-  'Bali':               { keywords: ['bali','uluwatu','jimbaran','seminyak','rimba'], cls: 'b-bali' },
-  'Komodo':             { keywords: ['komodo','oxindo','labuan bajo'], cls: 'b-komodo' },
-  'Jakarta':            { keywords: ['jakarta','midplaza','thamrin','sudirman'], cls: 'b-jakarta' },
-  'Delonix':            { keywords: ['delonix','karawang'], cls: 'b-delonix' },
-  'Riverside':          { keywords: ['riverside','golf club','rgcc'], cls: 'b-riverside' },
-  'AYANA Cruise':       { keywords: ['cruise','boat','pp-cruise','cruises','liveaboard'], cls: 'b-cruise' },
-  'Zero Based Manning': { keywords: ['manning','akwb','zero based','zero-based','dw employee'], cls: 'b-manning' },
-  'SPV':                { keywords: ['spv','room queue','room assignment','vip indicator'], cls: 'b-spv' },
-  'KYC Replacement':    { keywords: ['kyc','kyc replacement','identity verification'], cls: 'b-kyc' },
-  'KrisFlyer':          { keywords: ['krisflyer','.azi','.aii','miles issuance'], cls: 'b-krisflyer' },
-};
-
-const BRANCH_KEYWORDS = {
-  rewards:  ['redemption','points','krisflyer','miles','voucher','rewards','member','cms','issuance','reactivation','registration','tpr','mpp','abe'],
-  product:  ['spv','room','kyc','notification','dashboard','algorithm','prototype','app','feature','room assignment'],
-  business: ['sbu','boat','cruise','report','ahm','finance','sap','manning','benchmark','policy','agreement','forecast','pp-cruise'],
-};
-
-const DEEP_BACKLOG = []; // populated from live Asana data
+// Deterministic colour palette — every project name always maps to the same colour,
+// so the dashboard self-configures for any Asana account without hardcoded keywords.
+const PALETTE = ['#785A00','#C2410C','#15803D','#0D47A1','#4A148C','#004D40','#1A237E','#BF360C','#880E4F','#3E2723','#1B5E20','#5B21B6','#92400E','#0E7490'];
+function colorFor(s){ let h=0; for(let i=0;i<(s||'').length;i++) h=(h*31+s.charCodeAt(i))>>>0; return PALETTE[h % PALETTE.length]; }
+function chip(label,color){ return `<span class="badge" style="color:${color};background:${color}14;border:1px solid ${color}40">${escHtml(label)}</span>`; }
 
 // ── State ────────────────────────────────────────────────
 let allTasks = [];
-let filterBranches = new Set();
-let filterTags = new Set();
+let projectIndex = {};            // name -> {count, color}, rebuilt on each load
+let filterProjects = new Set();
 let done = new Set();
-let showBacklog = false;
 let today = '';
-let statsPeriodDays = 7;
+let statsPeriodDays = 30;          // sensible default window
+let statsLoadedPeriod = null;      // tracks which period is currently rendered
 let chartInstances = {};
 let myGid = null;
 let myName = '';
@@ -556,6 +511,8 @@ function switchTab(tab, btn) {
   document.getElementById('tab-stats').style.display = tab === 'stats'  ? 'block' : 'none';
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  // Auto-load statistics the first time the tab is opened (no button click needed)
+  if (tab === 'stats' && statsLoadedPeriod !== statsPeriodDays) loadStats();
 }
 
 // ── Dropdown ─────────────────────────────────────────────
@@ -576,37 +533,58 @@ document.addEventListener('click', e => {
     document.getElementById('notif-panel')?.classList.remove('open');
   }
 });
-function toggleBranch(cb) { cb.checked ? filterBranches.add(cb.value) : filterBranches.delete(cb.value); syncBranchBtn(); renderAll(); }
-function toggleTag(cb)    { cb.checked ? filterTags.add(cb.value)    : filterTags.delete(cb.value);    syncTagBtn();    renderAll(); }
-function clearFilter(which) {
-  if (which === 'branch') { filterBranches.clear(); document.querySelectorAll('#menu-branch input').forEach(c=>c.checked=false); syncBranchBtn(); }
-  else                    { filterTags.clear();     document.querySelectorAll('#menu-tag input').forEach(c=>c.checked=false);    syncTagBtn(); }
-  renderAll();
+// Build the project index from whatever projects appear on the user's real tasks.
+function buildProjectIndex(tasks) {
+  const counts = {};
+  tasks.forEach(t => (t.projectNames||[]).forEach(p => { counts[p] = (counts[p]||0)+1; }));
+  projectIndex = {};
+  Object.entries(counts).sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0]))
+    .forEach(([name,count]) => { projectIndex[name] = {count, color: colorFor(name)}; });
+  // Drop any filter selections whose project no longer exists
+  filterProjects.forEach(p => { if (!projectIndex[p]) filterProjects.delete(p); });
+}
+
+// Render the dynamic project filter menu.
+function renderProjectFilter() {
+  const wrap = document.getElementById('wrap-project');
+  const menu = document.getElementById('menu-project');
+  const names = Object.keys(projectIndex);
+  if (!names.length) { wrap.style.display = 'none'; syncProjectBtn(); return; }
+  wrap.style.display = '';
+  menu.innerHTML =
+    '<button class="dd-clear" onclick="clearProjectFilter()">Clear selection</button><div class="dd-divider"></div>' +
+    names.map(n => `<label class="dd-item">
+      <input type="checkbox" value="${escHtml(n)}" ${filterProjects.has(n)?'checked':''} onchange="toggleProject(this)">
+      <span class="dot" style="background:${projectIndex[n].color}"></span>
+      <span class="dd-item-name">${escHtml(n)}</span>
+      <span class="dd-item-count">${projectIndex[n].count}</span>
+    </label>`).join('');
+  syncProjectBtn();
+}
+
+function toggleProject(cb) { cb.checked ? filterProjects.add(cb.value) : filterProjects.delete(cb.value); syncProjectBtn(); renderAll(); }
+function clearProjectFilter() {
+  filterProjects.clear();
+  document.querySelectorAll('#menu-project input').forEach(c => c.checked = false);
+  syncProjectBtn(); renderAll();
 }
 function clearAllFilters() {
-  filterBranches.clear(); filterTags.clear();
-  document.querySelectorAll('.dd-menu input').forEach(c=>c.checked=false);
-  document.getElementById('search-input').value = '';
-  syncBranchBtn(); syncTagBtn();
-  document.getElementById('clear-all-btn').style.display = 'none';
+  filterProjects.clear();
+  document.querySelectorAll('#menu-project input').forEach(c => c.checked = false);
+  const s = document.getElementById('search-input'); if (s) s.value = '';
+  syncProjectBtn();
   renderAll();
 }
-function syncBranchBtn() {
-  const btn=document.getElementById('btn-branch'), label=document.getElementById('btn-branch-label'), n=filterBranches.size;
-  if (!n) { btn.classList.remove('active'); label.innerHTML='Branch'; }
-  else if (n===1) { btn.classList.add('active'); const v=[...filterBranches][0]; label.innerHTML=v[0].toUpperCase()+v.slice(1); }
-  else { btn.classList.add('active'); label.innerHTML=`Branch <span class="dd-badge">${n}</span>`; }
-  updateClearAll();
-}
-function syncTagBtn() {
-  const btn=document.getElementById('btn-tag'), label=document.getElementById('btn-tag-label'), n=filterTags.size;
-  if (!n) { btn.classList.remove('active'); label.innerHTML='Tag'; }
-  else if (n===1) { btn.classList.add('active'); label.innerHTML=[...filterTags][0]; }
-  else { btn.classList.add('active'); label.innerHTML=`Tag <span class="dd-badge">${n}</span>`; }
+function syncProjectBtn() {
+  const btn=document.getElementById('btn-project'), label=document.getElementById('btn-project-label'), n=filterProjects.size;
+  if (!btn) return;
+  if (!n) { btn.classList.remove('active'); label.innerHTML='Projects'; }
+  else if (n===1) { btn.classList.add('active'); label.textContent=[...filterProjects][0]; }
+  else { btn.classList.add('active'); label.innerHTML=`Projects <span class="dd-badge">${n}</span>`; }
   updateClearAll();
 }
 function updateClearAll() {
-  const has = filterBranches.size>0 || filterTags.size>0 || document.getElementById('search-input')?.value;
+  const has = filterProjects.size>0 || document.getElementById('search-input')?.value;
   document.getElementById('clear-all-btn').style.display = has ? 'block' : 'none';
 }
 
@@ -614,7 +592,8 @@ function updateClearAll() {
 function getToday() { return new Date().toISOString().split('T')[0]; }
 function getGreeting(name) {
   const h = new Date().getHours();
-  return (h<12?'Good morning':h<18?'Good afternoon':'Good evening') + ', ' + name + '!';
+  const t = h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+  return name ? `${t}, ${name}!` : `${t}!`;
 }
 function formatDisplayDate(d) {
   const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -626,7 +605,7 @@ function getPAT() { return localStorage.getItem('asana_pat')||''; }
 function checkSetup() {
   today = getToday();
   document.getElementById('header-date').textContent = formatDisplayDate(new Date());
-  document.getElementById('greeting').textContent = getGreeting('Marcel');
+  document.getElementById('greeting').textContent = getGreeting('');
   if (IS_GAS) { showApp(); loadTasksGAS(); }
   else if (getPAT()) { showApp(); loadTasks(); }
   else { document.getElementById('setup-screen').style.display='flex'; }
@@ -660,7 +639,7 @@ function openSettings() {
 function applyUserProfile(user) {
   if (!user) return;
   myGid = user.gid || null;
-  const firstName = (user.name||'Marcel').split(' ')[0];
+  const firstName = (user.name||'').split(' ')[0];
   myName = firstName;
   document.getElementById('greeting').textContent = getGreeting(firstName);
   const url = user.photo?.image_60x60 || user.photo?.image_36x36;
@@ -670,7 +649,7 @@ function applyUserProfile(user) {
     if (existing) { existing.src = url; }
     else if (slot) { const img=document.createElement('img'); img.src=url; img.className='header-avatar'; img.alt=firstName; slot.replaceWith(img); }
   } else if (slot) {
-    slot.textContent = firstName.charAt(0).toUpperCase();
+    slot.textContent = (firstName.charAt(0)||'?').toUpperCase();
   }
 }
 
@@ -696,6 +675,7 @@ async function loadTasks() {
       offset = data.next_page?.offset||null;
     } while (offset);
     allTasks = tasks.map(processTask);
+    buildProjectIndex(allTasks); renderProjectFilter();
     document.getElementById('last-updated').textContent = 'Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     setLoading(false); renderAll();
     loadNotifications();
@@ -703,7 +683,7 @@ async function loadTasks() {
 }
 function loadTasksGAS() {
   google.script.run
-    .withSuccessHandler(r => { applyUserProfile(r.user); allTasks=r.tasks.map(processTask); document.getElementById('last-updated').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); setLoading(false); renderAll(); })
+    .withSuccessHandler(r => { applyUserProfile(r.user); allTasks=r.tasks.map(processTask); buildProjectIndex(allTasks); renderProjectFilter(); document.getElementById('last-updated').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); setLoading(false); renderAll(); })
     .withFailureHandler(e => { setLoading(false); if(e.message==='NO_TOKEN') document.getElementById('setup-screen').style.display='flex'; else showError(e.message); })
     .getTasksAndProfile();
 }
@@ -711,18 +691,10 @@ function refresh() { allTasks=[]; setLoading(true); document.getElementById('sec
 
 // ── Task processing ──────────────────────────────────────
 function processTask(t) {
-  const name=t.name||'', nl=name.toLowerCase();
-  const projects=(t.projects||[]).map(p=>(p.name||'').toLowerCase());
-  const all=nl+' '+projects.join(' ');
+  const name=t.name||'';
+  const projectNames=(t.projects||[]).map(p=>(p.name||'').trim()).filter(Boolean);
   const isMember=/,\s*\d{7,}/.test(name);
-  let branch='other';
-  for (const [b,kws] of Object.entries(BRANCH_KEYWORDS)) { if(kws.some(k=>all.includes(k))){branch=b;break;} }
-  if (isMember) branch='rewards';
-  const tags=[];
-  for (const [tag,cfg] of Object.entries(TAGS)) {
-    if (projects.some(p=>cfg.keywords.some(k=>p.includes(k)))||cfg.keywords.some(k=>nl.includes(k))) tags.push(tag);
-  }
-  return {...t,isMember,branch,tags};
+  return {...t, isMember, projectNames};
 }
 
 // ── Categorization ───────────────────────────────────────
@@ -747,20 +719,15 @@ function dueBadge(due,bkt) {
   if (bkt==='upcoming') return `<span class="badge b-upcoming">${d}</span>`;
   return `<span class="badge b-nodate">No date</span>`;
 }
-function branchBadge(b) {
-  if (b==='rewards') return `<span class="badge b-rewards">Rewards</span>`;
-  if (b==='product') return `<span class="badge b-product">Product</span>`;
-  if (b==='business')return `<span class="badge b-business">Business</span>`;
-  return '';
+function projectBadges(t) {
+  return (t.projectNames||[]).map(p => chip(p, projectIndex[p]?.color || colorFor(p))).join('');
 }
-function tagBadges(tags) { return tags.map(t=>`<span class="badge ${TAGS[t]?.cls||'b-member'}">${t}</span>`).join(''); }
 
 // ── Filters ──────────────────────────────────────────────
 function applyFilters(tasks) {
   const q=(document.getElementById('search-input')?.value||'').toLowerCase();
   return tasks.filter(t => {
-    if (filterBranches.size && !filterBranches.has(t.branch)) return false;
-    if (filterTags.size && !t.tags.some(tg=>filterTags.has(tg))) return false;
+    if (filterProjects.size && !(t.projectNames||[]).some(p=>filterProjects.has(p))) return false;
     if (q && !t.name.toLowerCase().includes(q)) return false;
     return true;
   });
@@ -776,7 +743,7 @@ function renderTaskRow(t) {
     <div class="tcheck${isDone?' on':''}" onclick="toggleDone('${t.gid}')"></div>
     <div class="task-content" onclick="openSidebar('${t.gid}')">
       <div class="task-name">${escHtml(t.name)}</div>
-      <div class="task-meta">${dueBadge(t.due_on,bkt)}${branchBadge(t.branch)}${tagBadges(t.tags)}</div>
+      <div class="task-meta">${dueBadge(t.due_on,bkt)}${projectBadges(t)}</div>
     </div>
   </div>`;
 }
@@ -824,39 +791,36 @@ function renderAll() {
   const upcoming=filtered.filter(t=>bucket(t)==='upcoming');
   const nodate=filtered.filter(t=>bucket(t)==='nodate');
 
+  // Top summary cards reflect the currently filtered view
   document.getElementById('stats-row').innerHTML=`
-    <div class="stat"><div class="stat-label">Total</div><div class="stat-num">${allTasks.length+DEEP_BACKLOG.length}</div></div>
-    <div class="stat s-overdue"><div class="stat-label">Overdue</div><div class="stat-num">${allTasks.filter(t=>bucket(t)==='overdue').length+DEEP_BACKLOG.length}</div></div>
-    <div class="stat s-today"><div class="stat-label">Today</div><div class="stat-num">${allTasks.filter(t=>bucket(t)==='today').length}</div></div>
-    <div class="stat s-week"><div class="stat-label">This week</div><div class="stat-num">${allTasks.filter(t=>bucket(t)==='week').length}</div></div>
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-num">${filtered.length}</div></div>
+    <div class="stat s-overdue"><div class="stat-label">Overdue</div><div class="stat-num">${overdue.length}</div></div>
+    <div class="stat s-today"><div class="stat-label">Today</div><div class="stat-num">${todayT.length}</div></div>
+    <div class="stat s-week"><div class="stat-label">This week</div><div class="stat-num">${weekT.length}</div></div>
   `;
+
+  // "showing N of M" indicator when a filter is active
+  const fc = document.getElementById('filter-count');
+  if (fc) fc.textContent = (filtered.length !== allTasks.length) ? `${filtered.length} of ${allTasks.length}` : '';
 
   const svg=p=>`<svg class="sec-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">${p}</svg>`;
   let html='';
   html+=makeSection(svg('<circle cx="8" cy="8" r="7"/><path d="M8 5v3M8 11v.5" stroke-linecap="round"/>'),'Do now — overdue + today',[...todayT,...overdue]);
   html+=makeSection(svg('<rect x="2" y="3" width="12" height="11" rx="2"/><path d="M5 1v2M11 1v2M2 7h12" stroke-linecap="round"/>'),'This week',weekT);
-  if (nodate.length) {
-    let body='';
-    const byB={rewards:[],product:[],business:[],other:[]};
-    nodate.forEach(t=>(byB[t.branch]??byB.other).push(t));
-    ['rewards','product','business','other'].forEach(b=>byB[b].forEach(t=>body+=renderTaskRow(t)));
-    html+=`<div class="section"><div class="section-hdr" onclick="toggleSection(this)">${svg('<path d="M8 14V6M8 6a5 5 0 0 1 5-5M8 6a5 5 0 0 0-5-5" stroke-linecap="round"/>')}<span class="sec-title">Strategic — no due date</span><span class="sec-count">${nodate.length}</span><span class="sec-arrow">▾</span></div><div class="section-body">${body}</div></div>`;
-  }
+  html+=makeSection(svg('<path d="M8 14V6M8 6a5 5 0 0 1 5-5M8 6a5 5 0 0 0-5-5" stroke-linecap="round"/>'),'Strategic — no due date',nodate);
   html+=makeSection(svg('<path d="M2 8h12M10 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>'),'Upcoming',upcoming);
 
-  if (!filterBranches.size||filterBranches.has('rewards')) {
+  // Member-case backlog hint (live data only, when no project filter narrows the view)
+  if (!filterProjects.size) {
     const oldM=allTasks.filter(t=>t.isMember&&t.due_on&&t.due_on<today);
-    const total=oldM.length+DEEP_BACKLOG.length;
-    if (total>20) {
-      html+=`<div class="backlog-alert"><div class="backlog-msg"><strong>Backlog: ~${total} member cases overdue</strong>Likely already resolved — Jan 26 through Jun 10. Consider bulk-closing.<br><button class="toggle-link" onclick="toggleBacklog()">${showBacklog?'Hide':'Show all cases'}</button></div></div>`;
-      if (showBacklog) html+=`<div class="backlog-body"><div style="font-size:12px;font-weight:600;color:#B91C1C;">Deep backlog (Jan 26 – Jun 10)</div><div class="backlog-grid">${DEEP_BACKLOG.map(b=>`<div class="backlog-item"><span>${escHtml(b.name)}</span><span class="backlog-date">${b.date}</span></div>`).join('')}</div></div>`;
+    if (oldM.length>20) {
+      html+=`<div class="backlog-alert"><div class="backlog-msg"><strong>Backlog: ${oldM.length} member cases overdue</strong>Many are likely already resolved. Consider bulk-closing in Asana.</div></div>`;
     }
   }
   document.getElementById('sections').innerHTML=html||`<div class="empty">No tasks match the current filters.</div>`;
   document.getElementById('sections').style.display='block';
   checkDueTasks();
 }
-function toggleBacklog(){showBacklog=!showBacklog;renderAll();}
 function setLoading(on){document.getElementById('loading-state').style.display=on?'block':'none';document.getElementById('sections').style.display=on?'none':'block';document.getElementById('error-state').style.display='none';}
 function showError(msg){document.getElementById('error-state').style.display='block';document.getElementById('error-state').textContent='Error: '+msg;document.getElementById('loading-state').style.display='none';}
 function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -866,10 +830,7 @@ function setPeriod(btn) {
   document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   statsPeriodDays = btn.dataset.days;
-  // Reset stats view
-  document.getElementById('stats-content').style.display='none';
-  document.getElementById('stats-prompt').style.display='block';
-  document.getElementById('stats-loading').style.display='none';
+  loadStats();   // reload immediately for the new window
 }
 
 function getPeriodStart() {
@@ -880,12 +841,20 @@ function getPeriodStart() {
 }
 
 async function loadStats() {
-  document.getElementById('stats-prompt').style.display='none';
+  const promptEl = document.getElementById('stats-prompt');
+  promptEl.style.display='none';
   document.getElementById('stats-loading').style.display='block';
   document.getElementById('stats-content').style.display='none';
 
+  // GAS mode fetches tasks server-side via getTasksAndProfile, but stats need the
+  // completion history — fall back to the locally loaded tasks if no PAT in browser.
   const pat = getPAT();
-  if (!pat) { document.getElementById('stats-loading').style.display='none'; document.getElementById('stats-prompt').style.display='block'; return; }
+  if (!pat) {
+    promptEl.style.display='block';
+    promptEl.innerHTML = '<p>Statistics need a browser-stored Asana token. Open settings (⚙) to add one.</p>';
+    document.getElementById('stats-loading').style.display='none';
+    return;
+  }
 
   const wsGid = localStorage.getItem('asana_ws') || WORKSPACE_GID;
   const startDate = getPeriodStart();
@@ -908,11 +877,12 @@ async function loadStats() {
     } while (offset && pages < 8);
 
     const processed = tasks.map(t => ({...processTask(t), completed: t.completed, completed_at: t.completed_at}));
+    statsLoadedPeriod = statsPeriodDays;
     renderStats(processed, startDate);
   } catch(e) {
     document.getElementById('stats-loading').style.display='none';
-    document.getElementById('stats-prompt').innerHTML=`<p style="color:var(--error)">Failed to load: ${e.message}</p><button class="stats-load-btn" onclick="loadStats()" style="margin-top:12px;">Retry</button>`;
-    document.getElementById('stats-prompt').style.display='block';
+    promptEl.innerHTML=`<p style="color:var(--error)">Failed to load: ${e.message}</p><button class="stats-load-btn" onclick="loadStats()" style="margin-top:12px;">Retry</button>`;
+    promptEl.style.display='block';
   }
 }
 
@@ -957,13 +927,12 @@ function renderStats(tasks, startDate) {
   });
   const weekKeys = Object.keys(byWeek).sort();
 
-  // Branch breakdown
-  const byBranch = {rewards:0,product:0,business:0,other:0};
-  completed.forEach(t => { byBranch[t.branch]=(byBranch[t.branch]||0)+1; });
-
-  // Tag breakdown
-  const byTag = {};
-  completed.forEach(t => t.tags.forEach(tg => { byTag[tg]=(byTag[tg]||0)+1; }));
+  // Project breakdown (a task can belong to several projects)
+  const byProject = {};
+  completed.forEach(t => {
+    if (!t.projectNames || !t.projectNames.length) { byProject['(no project)']=(byProject['(no project)']||0)+1; return; }
+    t.projectNames.forEach(p => { byProject[p]=(byProject[p]||0)+1; });
+  });
 
   // ── Perf cards ──
   document.getElementById('perf-cards').innerHTML = `
@@ -987,8 +956,9 @@ function renderStats(tasks, startDate) {
 
   // ── Velocity chart ──
   destroyChart('velocity');
-  if (weekKeys.length) {
-    chartInstances.velocity = new Chart(document.getElementById('chart-velocity'), {
+  const velCanvas = freshCanvas('chart-velocity');
+  if (weekKeys.length && velCanvas) {
+    chartInstances.velocity = new Chart(velCanvas, {
       type: 'bar',
       data: {
         labels: weekKeys.map(fmtWeek),
@@ -1008,57 +978,37 @@ function renderStats(tasks, startDate) {
         }
       }
     });
-  } else {
-    document.getElementById('chart-velocity').parentElement.innerHTML = '<div class="empty">No completions found in this period.</div>';
+  } else if (velCanvas) {
+    velCanvas.parentElement.innerHTML = '<div class="empty">No completions found in this period.</div>';
   }
 
-  // ── Branch donut ──
+  // ── Project donut (top 6 + Other) ──
   destroyChart('branch');
-  const branchColors = {rewards:'#785A00',product:'#C2410C',business:'#15803D',other:'#908A83'};
-  const branchEntries = Object.entries(byBranch).filter(([,v])=>v>0);
-  if (branchEntries.length) {
-    chartInstances.branch = new Chart(document.getElementById('chart-branch'), {
+  const branchCanvas = freshCanvas('chart-branch');
+  let projEntries = Object.entries(byProject).sort((a,b)=>b[1]-a[1]);
+  if (projEntries.length > 6) {
+    const top = projEntries.slice(0,6);
+    const otherSum = projEntries.slice(6).reduce((s,[,v])=>s+v,0);
+    projEntries = [...top, ['Other', otherSum]];
+  }
+  if (projEntries.length && branchCanvas) {
+    chartInstances.branch = new Chart(branchCanvas, {
       type: 'doughnut',
       data: {
-        labels: branchEntries.map(([k])=>k[0].toUpperCase()+k.slice(1)),
-        datasets: [{ data: branchEntries.map(([,v])=>v), backgroundColor: branchEntries.map(([k])=>branchColors[k]||'#908A83'), borderWidth: 2, borderColor: '#fff' }]
+        labels: projEntries.map(([k])=>k),
+        datasets: [{ data: projEntries.map(([,v])=>v), backgroundColor: projEntries.map(([k])=>k==='Other'?'#B8AFA4':(projectIndex[k]?.color||colorFor(k))), borderWidth: 2, borderColor: '#fff' }]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom', labels: { font: { family: 'Lora,Georgia,serif', size: 11 }, padding: 8, boxWidth: 10 } } }
+        plugins: { legend: { position: 'bottom', labels: { font: { family: 'Lora,Georgia,serif', size: 10 }, padding: 7, boxWidth: 10 } } }
       }
     });
-  }
-
-  // ── Tags bar chart ──
-  destroyChart('tags');
-  const tagEntries = Object.entries(byTag).sort((a,b)=>b[1]-a[1]);
-  const tagColors = Object.fromEntries(Object.entries(TAGS).map(([t,c])=>[t, getTagColor(c.cls)]));
-  if (tagEntries.length) {
-    const canvasH = Math.max(120, tagEntries.length * 32);
-    document.getElementById('chart-tags').style.height = canvasH + 'px';
-    chartInstances.tags = new Chart(document.getElementById('chart-tags'), {
-      type: 'bar',
-      data: {
-        labels: tagEntries.map(([t])=>t),
-        datasets: [{ data: tagEntries.map(([,v])=>v), backgroundColor: tagEntries.map(([t])=>tagColors[t]||'#908A83'), borderRadius: 4, borderSkipped: false }]
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.x + ' completed' } } },
-        scales: {
-          x: { grid: { color: '#E9E1D9' }, ticks: { font: { family: 'Lora,Georgia,serif', size: 11 }, color: '#908A83' }, precision: 0 },
-          y: { grid: { display: false }, ticks: { font: { family: 'Lora,Georgia,serif', size: 11 }, color: '#4D4639' } }
-        }
-      }
-    });
-  } else {
-    document.getElementById('tags-chart-card').style.display = 'none';
+  } else if (branchCanvas) {
+    branchCanvas.parentElement.innerHTML = '<div class="empty">No project data.</div>';
   }
 
   // ── Insights ──
-  document.getElementById('insights-list').innerHTML = generateInsights({completed,incomplete,overdue,byWeek,weekKeys,onTimeRate,avgDaysLate,late,withDue,byBranch,byTag}).map(i =>
+  document.getElementById('insights-list').innerHTML = generateInsights({completed,incomplete,overdue,byWeek,weekKeys,onTimeRate,avgDaysLate,late,withDue,byProject}).map(i =>
     `<div class="insight ${i.type}"><span class="insight-icon">${i.icon}</span><span>${i.text}</span></div>`
   ).join('') || '<div class="empty">Not enough data yet for insights.</div>';
 
@@ -1066,39 +1016,44 @@ function renderStats(tasks, startDate) {
   document.getElementById('stats-content').style.display='block';
 }
 
-function getTagColor(cls) {
-  const map = {'b-bali':'#7C5E00','b-komodo':'#1B5E20','b-jakarta':'#0D47A1','b-delonix':'#4A148C','b-riverside':'#004D40','b-cruise':'#1A237E','b-manning':'#3E2723','b-spv':'#BF360C','b-kyc':'#880E4F','b-krisflyer':'#2E7D32'};
-  return map[cls] || '#908A83';
-}
 function destroyChart(key) { if (chartInstances[key]) { chartInstances[key].destroy(); delete chartInstances[key]; } }
+// Returns a clean <canvas> for the given id, recreating it if a prior "no data"
+// state replaced the wrapper's contents — so period switches always have a canvas.
+function freshCanvas(id) {
+  let el = document.getElementById(id);
+  const wrap = el ? el.parentElement : document.querySelector(`[data-canvas="${id}"]`);
+  if (!wrap) return null;
+  wrap.setAttribute('data-canvas', id);
+  wrap.innerHTML = `<canvas id="${id}"></canvas>`;
+  return document.getElementById(id);
+}
 
-function generateInsights({completed,incomplete,overdue,byWeek,weekKeys,onTimeRate,avgDaysLate,late,withDue,byBranch,byTag}) {
+function generateInsights({completed,incomplete,overdue,byWeek,weekKeys,onTimeRate,avgDaysLate,late,withDue,byProject}) {
   const ins = [];
-  const total = completed.length + incomplete.length;
 
   // Completion volume
-  if (!completed.length) { ins.push({type:'watch',icon:'⚠️',text:'No completed tasks found in this period. Try loading a longer date range.'}); return ins; }
+  if (!completed.length) { ins.push({type:'watch',icon:'⚠️',text:'No completed tasks found in this period. Try a longer date range.'}); return ins; }
 
   // On-time
   if (onTimeRate !== null) {
     if (onTimeRate >= 80) ins.push({type:'good',icon:'✅',text:`${onTimeRate}% of tasks completed on time — excellent deadline adherence.`});
-    else if (onTimeRate >= 60) ins.push({type:'watch',icon:'⚠️',text:`${onTimeRate}% on-time rate. Setting earlier internal deadlines (2–3 days before Asana due date) may help.`});
+    else if (onTimeRate >= 60) ins.push({type:'watch',icon:'⚠️',text:`${onTimeRate}% on-time rate. Setting earlier internal deadlines (2–3 days before the Asana due date) may help.`});
     else ins.push({type:'alert',icon:'🔴',text:`Only ${onTimeRate}% of tasks completed on time. Consider reviewing task scope — large tasks may need breaking down.`});
   }
 
   // Avg lateness
-  if (avgDaysLate && parseFloat(avgDaysLate) > 3) ins.push({type:'watch',icon:'⏱️',text:`Late completions average +${avgDaysLate} days. Most delays may be in a specific branch — check branch breakdown above.`});
+  if (avgDaysLate && parseFloat(avgDaysLate) > 3) ins.push({type:'watch',icon:'⏱️',text:`Late completions average +${avgDaysLate} days. Check the project breakdown above to see where delays cluster.`});
 
   // Overdue pile
-  if (overdue.length > 10) ins.push({type:'alert',icon:'🔴',text:`${overdue.length} tasks are currently overdue. Scheduling a weekly 30-min triage session can prevent backlog buildup.`});
+  if (overdue.length > 10) ins.push({type:'alert',icon:'🔴',text:`${overdue.length} tasks are currently overdue. A weekly 30-min triage session can prevent backlog buildup.`});
   else if (overdue.length > 0) ins.push({type:'watch',icon:'⚠️',text:`${overdue.length} overdue task${overdue.length>1?'s':''} need attention. Review the Tasks tab to prioritise.`});
   else ins.push({type:'good',icon:'✅',text:'No overdue tasks this period — great backlog hygiene!'});
 
-  // Dominant branch
-  const topBranch = Object.entries(byBranch).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1])[0];
-  if (topBranch) {
-    const pct = Math.round(topBranch[1]/completed.length*100);
-    ins.push({type:'info',icon:'ℹ️',text:`${topBranch[0][0].toUpperCase()+topBranch[0].slice(1)} tasks make up ${pct}% of your completions. ${pct>60?'Consider balancing across Product and Business streams.':'Good cross-stream balance.'}`});
+  // Dominant project
+  const topProj = Object.entries(byProject).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1])[0];
+  if (topProj) {
+    const pct = Math.round(topProj[1]/completed.length*100);
+    ins.push({type:'info',icon:'ℹ️',text:`“${topProj[0]}” accounts for ${pct}% of your completions. ${pct>60?'A large share sits in one project — worth checking if effort is well balanced.':'Healthy spread across projects.'}`});
   }
 
   // Velocity trend
@@ -1118,10 +1073,6 @@ function generateInsights({completed,incomplete,overdue,byWeek,weekKeys,onTimeRa
   // No-due-date tasks
   const nodatePct = Math.round(incomplete.filter(t=>!t.due_on).length/Math.max(incomplete.length,1)*100);
   if (nodatePct > 40) ins.push({type:'watch',icon:'📅',text:`${nodatePct}% of open tasks have no due date. Assigning deadlines — even rough ones — significantly improves completion rates.`});
-
-  // Tag insights
-  const topTag = Object.entries(byTag).sort((a,b)=>b[1]-a[1])[0];
-  if (topTag) ins.push({type:'info',icon:'🏷️',text:`Most completed tag: ${topTag[0]} (${topTag[1]} task${topTag[1]>1?'s':''}). This is your highest-output project area.`});
 
   return ins;
 }
@@ -1160,7 +1111,7 @@ function renderSidebar(task) {
   const bkt = bucket(task), notes = getNotes(task.gid);
   document.getElementById('sb-body').innerHTML = `
     <div class="sb-task-name">${escHtml(task.name)}</div>
-    <div class="sb-badges">${dueBadge(task.due_on,bkt)}${branchBadge(task.branch)}${tagBadges(task.tags)}</div>
+    <div class="sb-badges">${dueBadge(task.due_on,bkt)}${projectBadges(task)}</div>
     <a class="sb-asana-link" href="https://app.asana.com/0/0/${task.gid}" target="_blank">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v12h12v-4M10 2h4v4M10 6l4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Open in Asana
