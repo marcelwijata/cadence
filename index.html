@@ -1183,6 +1183,36 @@ function generateInsights({completed,incomplete,overdue,byWeek,weekKeys,onTimeRa
 
 // ── Sidebar ──────────────────────────────────────────────
 let sidebarGid = null;
+// Open a task in the native Asana app on mobile, with a clean web fallback.
+// Desktop opens the web app in a new tab.
+function openTask(gid) {
+  const web = 'https://app.asana.com/0/0/' + gid;
+  const ua = navigator.userAgent || '';
+  const isAndroid = /android/i.test(ua);
+  const isIOS = /iphone|ipad|ipod/i.test(ua);
+
+  if (!isAndroid && !isIOS) { window.open(web, '_blank', 'noopener'); return; }
+
+  if (isAndroid) {
+    // Android intent: opens the app if installed, else follows the fallback URL — no error page.
+    window.location.href = 'intent://0/0/' + gid + '/#Intent;scheme=asana;package=com.asana.app;' +
+      'S.browser_fallback_url=' + encodeURIComponent(web) + ';end';
+    return;
+  }
+
+  // iOS: try the asana:// scheme; if the app doesn't take over, fall back to web.
+  let switched = false;
+  const cancel = () => { switched = true; };
+  document.addEventListener('visibilitychange', cancel, { once: true });
+  window.addEventListener('pagehide', cancel, { once: true });
+  setTimeout(() => {
+    document.removeEventListener('visibilitychange', cancel);
+    window.removeEventListener('pagehide', cancel);
+    if (!switched && document.visibilityState === 'visible') window.location.href = web;
+  }, 1200);
+  window.location.href = 'asana://0/0/' + gid + '/';
+}
+
 function openSidebar(gid) {
   sidebarGid = gid;
   const task = allTasks.find(t=>t.gid===gid);
@@ -1216,7 +1246,7 @@ function renderSidebar(task) {
   document.getElementById('sb-body').innerHTML = `
     <div class="sb-task-name">${escHtml(task.name)}</div>
     <div class="sb-badges">${dueBadge(task.due_on,bkt)}${projectBadges(task)}</div>
-    <a class="sb-asana-link" href="https://app.asana.com/0/0/${task.gid}" target="_blank">
+    <a class="sb-asana-link" href="https://app.asana.com/0/0/${task.gid}" onclick="openTask('${task.gid}');return false;">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2H2v12h12v-4M10 2h4v4M10 6l4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Open in Asana
     </a>
@@ -1239,8 +1269,8 @@ function renderGroupSidebar(tasks, date, noteKey) {
     const n=t.name.replace(/,\s*\d+$/,'').trim();
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
       <span style="font-size:13px;">${escHtml(n)}</span>
-      <a href="https://app.asana.com/0/0/${t.gid}" target="_blank" onclick="event.stopPropagation()"
-        style="font-size:11px;color:var(--primary);text-decoration:none;padding:2px 8px;border:1px solid var(--border);border-radius:4px;white-space:nowrap;margin-left:8px;">↗ Asana</a>
+      <a href="https://app.asana.com/0/0/${t.gid}" onclick="event.stopPropagation();openTask('${t.gid}');return false;"
+        style="font-size:13px;color:var(--primary);text-decoration:none;padding:4px 10px;border:1px solid var(--border);border-radius:4px;white-space:nowrap;margin-left:8px;">↗ Asana</a>
     </div>`;
   }).join('');
   document.getElementById('sb-body').innerHTML = `
