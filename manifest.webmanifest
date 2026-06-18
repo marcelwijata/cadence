@@ -1,0 +1,19 @@
+{
+  "name": "Cadence",
+  "short_name": "Cadence",
+  "description": "Your day, in order of what matters most.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F4EEEB",
+  "theme_color": "#785A00",
+  "icons": [
+    {
+      "src": "cadence-icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}
