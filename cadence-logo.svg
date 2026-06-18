@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 64" role="img" aria-label="Cadence">
+  <!-- App icon: rounded gold tile with three ascending bars -->
+  <rect x="4" y="4" width="56" height="56" rx="15" fill="#785A00"/>
+  <rect x="16" y="35" width="7" height="13" rx="3.5" fill="#fff"/>
+  <rect x="28.5" y="27" width="7" height="21" rx="3.5" fill="#fff"/>
+  <rect x="41" y="18" width="7" height="30" rx="3.5" fill="#fff"/>
+  <!-- Wordmark -->
+  <text x="78" y="42" font-family="Lora, Georgia, serif" font-size="30" font-weight="700" fill="#785A00">Cadence</text>
+</svg>
