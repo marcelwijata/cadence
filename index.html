@@ -8,7 +8,6 @@
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2048%2048'%3E%3Crect%20width='48'%20height='48'%20rx='12'%20fill='%23785A00'/%3E%3Crect%20x='10'%20y='27'%20width='7'%20height='11'%20rx='3.5'%20fill='%23fff'/%3E%3Crect%20x='20.5'%20y='20'%20width='7'%20height='18'%20rx='3.5'%20fill='%23fff'/%3E%3Crect%20x='31'%20y='12'%20width='7'%20height='26'%20rx='3.5'%20fill='%23fff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -436,7 +435,7 @@ body{font-family:'Lora',Georgia,serif;background:var(--bg);color:var(--text);fon
         </div>
         <div class="search-wrap">
           <span class="search-icon"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="m11 11 3 3" stroke-linecap="round"/></svg></span>
-          <input type="text" id="search-input" placeholder="Search tasks…" oninput="renderAll()">
+          <input type="text" id="search-input" placeholder="Search tasks…" oninput="onSearchInput()">
         </div>
       </div>
       <span class="filter-count" id="filter-count"></span>
@@ -519,7 +518,36 @@ let chartInstances = {};
 let myGid = null;
 let myName = '';
 let notifLoaded = false;
+let notifFetching = false;         // in-flight guard so notifications never double-fetch
 let notifUnreadSet = new Set();
+let searchTimer = null;
+
+// ── Performance helpers ──────────────────────────────────
+// Debounce search so a full re-render fires once typing pauses, not per keystroke.
+function onSearchInput() { clearTimeout(searchTimer); searchTimer = setTimeout(renderAll, 160); }
+
+// Stale-while-revalidate cache: render last-known tasks instantly, refresh in background.
+const TASKS_CACHE_KEY = 'cadence_tasks_cache';
+function readTasksCache() { try { return JSON.parse(localStorage.getItem(TASKS_CACHE_KEY) || 'null'); } catch { return null; } }
+function writeTasksCache(user, tasks) { try { localStorage.setItem(TASKS_CACHE_KEY, JSON.stringify({user, tasks, ts: Date.now()})); } catch {} }
+function setUpdatedLabel(ts, stale) {
+  const el = document.getElementById('last-updated'); if (!el) return;
+  el.textContent = (stale ? 'Cached · ' : 'Updated ') + new Date(ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+
+// Load Chart.js only when the Insights tab is first opened — keeps it off the first-paint path.
+let chartJsPromise = null;
+function ensureChartJs() {
+  if (window.Chart) return Promise.resolve();
+  if (chartJsPromise) return chartJsPromise;
+  chartJsPromise = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+    s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+  return chartJsPromise;
+}
 
 // ── Tab switching ────────────────────────────────────────
 function switchTab(tab, btn) {
@@ -671,8 +699,21 @@ function applyUserProfile(user) {
 
 // ── Tasks API ────────────────────────────────────────────
 async function loadTasks() {
-  setLoading(true);
   const pat = getPAT();
+
+  // 1) Paint cached data immediately if we have it (instant load on revisit).
+  const cached = readTasksCache();
+  if (cached && Array.isArray(cached.tasks)) {
+    applyUserProfile(cached.user);
+    allTasks = cached.tasks.map(processTask);
+    buildProjectIndex(allTasks); renderProjectFilter();
+    setLoading(false); renderAll();
+    setUpdatedLabel(cached.ts, true);
+  } else {
+    setLoading(true);
+  }
+
+  // 2) Fetch fresh in the background and swap it in.
   try {
     const meRes = await fetch('https://app.asana.com/api/1.0/users/me?opt_fields=name,photo,workspaces',{headers:{'Authorization':'Bearer '+pat}});
     if (!meRes.ok) throw new Error('Auth error: '+meRes.status);
@@ -690,12 +731,17 @@ async function loadTasks() {
       tasks = tasks.concat(data.data);
       offset = data.next_page?.offset||null;
     } while (offset);
+    writeTasksCache(me.data, tasks);
     allTasks = tasks.map(processTask);
     buildProjectIndex(allTasks); renderProjectFilter();
-    document.getElementById('last-updated').textContent = 'Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     setLoading(false); renderAll();
-    loadNotifications();
-  } catch(e) { setLoading(false); showError(e.message); }
+    setUpdatedLabel(Date.now(), false);
+    // Defer the ~20 notification calls so they don't compete with first paint.
+    setTimeout(() => { if (!notifFetching) loadNotifications(); }, 1500);
+  } catch(e) {
+    if (cached) setUpdatedLabel(cached.ts, true);   // offline / error → keep the cached view
+    else { setLoading(false); showError(e.message); }
+  }
 }
 function loadTasksGAS() {
   google.script.run
@@ -801,11 +847,10 @@ function makeSection(icon,title,tasks) {
 function renderAll() {
   const filtered=applyFilters(allTasks);
   updateClearAll();
-  const overdue=filtered.filter(t=>bucket(t)==='overdue');
-  const todayT=filtered.filter(t=>bucket(t)==='today');
-  const weekT=filtered.filter(t=>bucket(t)==='week');
-  const upcoming=filtered.filter(t=>bucket(t)==='upcoming');
-  const nodate=filtered.filter(t=>bucket(t)==='nodate');
+  // Single pass instead of five .filter() sweeps over the task list.
+  const byBucket={overdue:[],today:[],week:[],upcoming:[],nodate:[]};
+  filtered.forEach(t=>byBucket[bucket(t)].push(t));
+  const overdue=byBucket.overdue, todayT=byBucket.today, weekT=byBucket.week, upcoming=byBucket.upcoming, nodate=byBucket.nodate;
 
   // Top summary cards reflect the currently filtered view
   document.getElementById('stats-row').innerHTML=`
@@ -893,6 +938,7 @@ async function loadStats() {
     } while (offset && pages < 8);
 
     const processed = tasks.map(t => ({...processTask(t), completed: t.completed, completed_at: t.completed_at}));
+    await ensureChartJs();   // load the charting library on demand, not at startup
     statsLoadedPeriod = statsPeriodDays;
     renderStats(processed, startDate);
   } catch(e) {
@@ -1268,12 +1314,14 @@ function toggleNotifPanel() {
 }
 
 async function loadNotifications() {
+  if (notifFetching) return;            // coalesce concurrent triggers (load + panel open)
   const pat = getPAT();
   if (!pat) {
     const cached = getCachedNotifs();
     if (!cached.length) document.getElementById('notif-body').innerHTML = '<div class="notif-empty">Connect Asana to see notifications.</div>';
     return;
   }
+  notifFetching = true;
   notifLoaded = true;
   const wsGid = localStorage.getItem('asana_ws') || WORKSPACE_GID;
   const since = new Date(Date.now() - 30 * 86400000).toISOString();
@@ -1335,6 +1383,8 @@ async function loadNotifications() {
     document.getElementById('notif-refresh-spin')?.remove();
     const cached = getCachedNotifs();
     if (!cached.length) document.getElementById('notif-body').innerHTML = '<div class="notif-empty">Could not load notifications.</div>';
+  } finally {
+    notifFetching = false;
   }
 }
 
